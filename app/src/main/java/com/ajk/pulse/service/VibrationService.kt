@@ -30,14 +30,16 @@ class VibrationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            Actions.START.toString() -> start()
-            Actions.STOP.toString() -> stop()
+        intent?.let { 
+            when (it.action) {
+                Actions.START.toString() -> start(it)
+                Actions.STOP.toString() -> stop()
+            }
         }
         return START_STICKY
     }
 
-    private fun start() {
+    private fun start(intent: Intent) {
         createNotificationChannel()
         val notification = NotificationCompat.Builder(this, "pulse_channel")
             .setContentTitle("Pulse Active")
@@ -50,7 +52,7 @@ class VibrationService : Service() {
         val pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_IMMUTABLE)
         this.alarmPendingIntent = pendingIntent
 
-        val interval = 60 * 1000L // 2 minutes
+        val interval = intent.getLongExtra("interval", 15 * 60 * 1000L)
         alarmManager.setRepeating(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
             SystemClock.elapsedRealtime() + interval,
